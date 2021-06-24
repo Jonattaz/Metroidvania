@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c6d3b06bbfd8b442b9dd7875380e7f1, type: 3}
+  m_Name: ShortSword
+  m_EditorClassIdentifier: 
+  itemID: 1
+  weaponName: Short Sword
+  description: With great power comes great responsability.
+  damage: 50
+  image: {fileID: 21300006, guid: fc26f483f9de71146874da8abe8a1053, type: 3}
+  animation: {fileID: 7400000, guid: 700c8fa9343b4f7418390c66e1901459, type: 2}
+  message: Short Sword acquired.
