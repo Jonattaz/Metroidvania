@@ -35,11 +35,14 @@ public class Player : MonoBehaviour
 
     public ConsumableItem item;
     public int maxHealth;
-
     public int maxMana;
+    public int strength;
+    public int defense;
 
     private int health;
     private int mana;
+
+    private Armor armor;
 
     // Start is called before the first frame update
     void Start()
@@ -48,6 +51,8 @@ public class Player : MonoBehaviour
         speed = maxSpeed;
         animPlayer = GetComponent<Animator>();
         attack = GetComponentInChildren<Attack>();
+        mana = maxMana;
+        health = maxHealth;
     }
 
     // Update is called once per frame
@@ -154,5 +159,26 @@ public class Player : MonoBehaviour
         weaponEquipped = weapon;
         attack.SetWeapon(weaponEquipped.damage);
     }
+
+    // Método que controla a adição de armaduras
+    public void AddArmor(Armor item)
+    {
+        armor = item;
+        defense = armor.defense;
+    }
+
+
+    // Método que retorna a vida do jogador
+    public int GetHealth()
+    {
+        return health;
+    }
+
+    // Método que retorna a mana do jogador
+    public int GetMana()
+    {
+        return mana;
+    }
+
 
 }

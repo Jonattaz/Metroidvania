@@ -12,6 +12,8 @@ public class Inventory : MonoBehaviour
 
     public List<ConsumableItem> items;
 
+    public List<Armor> armor; 
+
     public static Inventory inventory;
 
     private void Awake()

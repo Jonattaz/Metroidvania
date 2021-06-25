@@ -29,5 +29,10 @@ public class Attack : MonoBehaviour
         damage = damageValue;
     }
 
+    // Método que retorna o dano máximo que o jogador pode causar
+    public int GetDamage()
+    {
+        return damage;
+    }
 
 }
