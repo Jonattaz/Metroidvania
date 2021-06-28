@@ -35,4 +35,23 @@ public class Attack : MonoBehaviour
         return damage;
     }
 
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        Enemy enemy = collision.GetComponent<Enemy>();
+        if (enemy != null)
+        {
+            enemy.TakeDamage(damage + FindObjectOfType<Player>().strength);
+        }
+
+
+    }
+
+
+
+
+
+
+
+
 }

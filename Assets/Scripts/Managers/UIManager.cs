@@ -30,6 +30,7 @@ public class UIManager : MonoBehaviour
     // Referência ao inventário
     private Inventory inventory;
 
+
     // Referência o prefab do ItemList
     public GameObject itemListPrefab;
 
@@ -51,6 +52,8 @@ public class UIManager : MonoBehaviour
 
     private Player player;
 
+    // UI do jogador
+    public Text healthUI, manaUI, soulsUI, potionUI;
 
     // Start is called before the first frame update
     void Start()
@@ -58,7 +61,6 @@ public class UIManager : MonoBehaviour
         inventory = Inventory.inventory;
         player = FindObjectOfType<Player>();
     }
-
 
     // Update is called once per frame
     void Update()
@@ -72,6 +74,7 @@ public class UIManager : MonoBehaviour
             scrollView.SetActive(false);
             optionPanel.SetActive(true);
             UpdateAtributes();
+            UpdateUI();
 
             // Para não causar o bug do OutOfRange
             if (pauseMenu)
@@ -189,7 +192,6 @@ public class UIManager : MonoBehaviour
 
     }
 
-
     // Método que controla a atualização dos itens no inventário, destruindo os items duplicados
     void RefreshItemList()
     {
@@ -200,8 +202,6 @@ public class UIManager : MonoBehaviour
 
         items.Clear();
     }
-
-
 
     // Método responsável por atualizar a lista de itens no inventário
     void UpdateItemsList(int option)
@@ -275,6 +275,15 @@ public class UIManager : MonoBehaviour
         }
         UpdateAtributes();
         UpdateDescription();
+    }
+
+    // Método que atualiza todos os elementos de UI(vida,mana e souls)
+    public void UpdateUI()
+    {
+        healthUI.text = player.GetHealth() + " / " + player.maxHealth;
+        manaUI.text = player.GetMana() + " / " + player.maxMana;
+        soulsUI.text = "Souls: " + player.souls;
+        potionUI.text = "X" + inventory.CountItems(player.item);
     }
 
 

@@ -29,6 +29,22 @@ public class Inventory : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    // Método que contabiliza a quantidade de itens que o jogador possui
+    public int CountItems(ConsumableItem item)
+    {
+        int numberOfItems = 0;
+
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (item == items[i])
+            {
+                numberOfItems++;
+            }
+        }
+
+        return numberOfItems;
+    }
+
 
     // Método que adiciona armas ao inventário
     public void AddWeapon(Weapon weapon)

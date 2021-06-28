@@ -1,6 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
+// Enumerador para as skills do jogo, novas podem ser adicionadas aqui e validadas no método SetPlayerSkill
+public enum PlayerSkill
+{
+    dash, doubleJump
+}
 
 public class Player : MonoBehaviour
 {
@@ -23,7 +30,7 @@ public class Player : MonoBehaviour
     public float jumpForce;
 
     // Variável do tipo weapon
-    private Weapon weaponEquipped;
+    public Weapon weaponEquipped;
 
     // Referência ao animator do jogador
     private Animator animPlayer;
@@ -32,6 +39,8 @@ public class Player : MonoBehaviour
 
     public float fireRate;
     private float nextAttack;
+
+    public int souls;
 
     public ConsumableItem item;
     public int maxHealth;
@@ -42,7 +51,27 @@ public class Player : MonoBehaviour
     private int health;
     private int mana;
 
-    private Armor armor;
+    public Armor armor;
+
+    // Variável que armazena o sprite renderer do jogador
+    private SpriteRenderer spriteRend;
+    
+    // Variável que armazena o estado de se o jogador pode ou não causar dano
+    private bool canDamage = true;
+
+    // Variável que armazena o estado de vida do jogador
+    private bool isDead =  false;
+
+    private bool dash = false;
+
+    public bool doubleJumpSkill = false;
+    public bool dashSkill = false;
+
+    // Referência ao inventário
+    private Inventory inventory;
+
+    // Váriavel que controla a força do dash
+    public float dashForce;
 
     // Start is called before the first frame update
     void Start()
@@ -53,46 +82,63 @@ public class Player : MonoBehaviour
         attack = GetComponentInChildren<Attack>();
         mana = maxMana;
         health = maxHealth;
+        spriteRend = GetComponent<SpriteRenderer>();
+        FindObjectOfType<UIManager>().UpdateUI();
+        inventory = Inventory.inventory;
     }
 
-    // Update is called once per frame
-    void Update()
+// Update is called once per frame
+void Update()
     {
-        // Dispara uma linha da posição do jogador até a posição da variável groundCheck
-        onGround = Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Ground"));
-        
-        // Faz uma verificação usando o onGround para saber se pode usar o double jump
-        if (onGround)
+        if (!isDead)
         {
-            doubleJump = false;
-        }
+            // Dispara uma linha da posição do jogador até a posição da variável groundCheck
+            onGround = Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Ground"));
 
-
-        // Controla o jump e o double jump
-        if (Input.GetButtonDown("Jump") && (onGround || !doubleJump))
-        {
-            jump = true;
-            if (!doubleJump && !onGround)
+            // Faz uma verificação usando o onGround para saber se pode usar o double jump
+            if (onGround)
             {
-                doubleJump = true;
+                doubleJump = false;
             }
-        }
 
-        // Controla o ataque do jogador
-        if (Input.GetButtonDown("Fire1") && Time.time> nextAttack && weaponEquipped != null)
-        {
-            animPlayer.SetTrigger("Attack");
-            attack.PlayAnimation(weaponEquipped.animation);
-            nextAttack = Time.time + fireRate;
-        }
 
-        // Faz o jogador usar algum item
-        if (Input.GetButtonDown("Fire2"))
-        {
-            UseItem(item);
-            Inventory.inventory.RemoveItem(item);
-        }
+            // Controla o jump e o double jump
+            if (Input.GetButtonDown("Jump") && (onGround || (!doubleJump && doubleJumpSkill)))
+            {
+                jump = true;
+                if (!doubleJump && !onGround)
+                {
+                    doubleJump = true;
+                }
+            }
 
+            // Controla o ataque do jogador
+            if (Input.GetButtonDown("Fire1") && Time.time > nextAttack && weaponEquipped != null)
+            {
+                dash = false;
+                animPlayer.SetTrigger("Attack");
+                attack.PlayAnimation(weaponEquipped.animation);
+                nextAttack = Time.time + fireRate;
+            }
+
+            if (inventory.CountItems(item) > 0)
+            {
+                // Faz o jogador usar o item poção
+                if (Input.GetButtonDown("Fire2"))
+                {
+                    UseItem(item);
+                    Inventory.inventory.RemoveItem(item);
+                    FindObjectOfType<UIManager>().UpdateUI();
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.Q) && onGround && (!dash && dashSkill))
+            {
+                rb.velocity = Vector2.zero;
+                animPlayer.SetTrigger("Dash");
+            }
+
+        }
     }
 
     // Métod que causa o efeito do item usado pelo jogador
@@ -115,32 +161,45 @@ public class Player : MonoBehaviour
     // É chamada a cada tempo fixo, normalmente usado quando se precisa trabalhar com a física do jogo
     private void FixedUpdate()
     {
-        // Variável que recebe a movimentação no eixo da horizontal
-        float h = Input.GetAxisRaw("Horizontal");
-
-        // Atualiza a velocidade do rigidbody multiplicando h por speed
-        rb.velocity = new Vector2(h * speed, rb.velocity.y) ;
-
-        // Controla quando o método Flip é chamado
-        if (h > 0 && !facingRight)
+        if (!isDead)
         {
-            Flip();
-        }
-        else if(h < 0 && facingRight)
-        {
-            Flip();
-        }
+            // Variável que recebe a movimentação no eixo da horizontal
+            float h = Input.GetAxisRaw("Horizontal");
 
-        // Faz o jogador pular
-        if (jump)
-        {
-            rb.velocity = Vector2.zero;
-            rb.AddForce(Vector2.up * jumpForce);
-            jump = false;
-        }
+            if (canDamage && !dash)
+            {
+                // Atualiza a velocidade do rigidbody multiplicando h por speed
+                rb.velocity = new Vector2(h * speed, rb.velocity.y);
+                animPlayer.SetFloat("Speed", Mathf.Abs(h));
+            }
 
+            // Controla quando o método Flip é chamado
+            if (h > 0 && !facingRight)
+            {
+                Flip();
+            }
+            else if (h < 0 && facingRight)
+            {
+                Flip();
+            }
+
+            // Faz o jogador pular
+            if (jump)
+            {
+                rb.velocity = Vector2.zero;
+                rb.AddForce(Vector2.up * jumpForce);
+                jump = false;
+            }
+
+            if (dash)
+            {
+                int hforce = facingRight ? 1 : -1;
+                rb.velocity = Vector2.left * dashForce * hforce; 
+
+            }
+
+        }
     }
-
 
     // Método que faz o sprite do jogador seguir o lado do qual se movimenta
     void Flip()
@@ -167,7 +226,6 @@ public class Player : MonoBehaviour
         defense = armor.defense;
     }
 
-
     // Método que retorna a vida do jogador
     public int GetHealth()
     {
@@ -179,6 +237,87 @@ public class Player : MonoBehaviour
     {
         return mana;
     }
+    
+    // Método responsável pelo dano recebido
+    public void TakeDamage(int damage)
+    {
+        if (canDamage)
+        {
+            canDamage = false;
+            health -= (damage - defense);
+            FindObjectOfType<UIManager>().UpdateUI();
+            if (health <= 0)
+            {
+                animPlayer.SetTrigger("Dead");
+                Invoke("ReloadScene", 1f);
+                isDead = true;
+            }
+            else
+            {
+                StartCoroutine(DamageCoroutine());
+            }
+
+        }
+
+    }
+
+    // Corrotina que controla a parte estética do dano levado pelo jogador
+    IEnumerator DamageCoroutine()
+    {
+        for (float i = 0; i < 0.6f; i += 0.2f)
+        {
+            spriteRend.enabled = false;
+            yield return new WaitForSeconds(0.1f);
+            spriteRend.enabled = true;
+            yield return new WaitForSeconds(0.1f);
+        }
+
+        canDamage = true;
+    }
+
+    // Método que recarrega a cena caso o jogador morra
+    void ReloadScene()
+    {
+        Souls.instance.gameObject.SetActive(true);
+        Souls.instance.souls = souls;
+        Souls.instance.transform.position = transform.position;
+        /// recarrega a cena
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }  
+
+    // Método que passa a variável dash para verdadeiro
+    public void DashTrue()
+    {
+        dash = true;
+    }
+
+    // Método que passa a váriável dash para falso
+    public void DashFalse()
+    {
+        dash = false;
+    }
+
+    // Método que controla o desbloqueio de novas skills
+    public void SetPlayerSkill(PlayerSkill skill)
+    {
+        if (skill == PlayerSkill.dash)
+        {
+            dashSkill = true;
+
+        }else if ( skill == PlayerSkill.doubleJump)
+        {
+            doubleJumpSkill = true;
+        }
+    }
 
 
 }
+
+
+
+
+
+
+
+
+

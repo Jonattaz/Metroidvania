@@ -11,6 +11,14 @@ public class Enemy : MonoBehaviour
     // Rigidbody do enemy
     private Rigidbody2D rb;
 
+    // Váriavel que armazena o drop do inimigo
+    public GameObject itemDrop;
+
+    public ConsumableItem item;
+
+    // Váriavel que representa a vida do inimigo
+    public int health;
+
     // Referência ao animator do objeto(enemy)
     private Animator anim;
 
@@ -22,6 +30,14 @@ public class Enemy : MonoBehaviour
 
     private bool facingRight = false;
 
+    private bool isDead;
+
+    private SpriteRenderer spriteRend;
+
+    // Variável que representa o dano que o inimigo pode receber
+    public int damage;
+
+    public int souls;
 
     // Start is called before the first frame update
     void Start()
@@ -29,28 +45,33 @@ public class Enemy : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player").transform;
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        spriteRend = GetComponent<SpriteRenderer>();
+
 
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        playerDistance = player.transform.position - transform.position;
-        if (Mathf.Abs(playerDistance.x) < 12 && Mathf.Abs(playerDistance.y) < 3)
+        if (!isDead)
         {
-            rb.velocity = new Vector2(speed * (playerDistance.x / Mathf.Abs(playerDistance.x)), rb.velocity.y);
+            playerDistance = player.transform.position - transform.position;
+            if (Mathf.Abs(playerDistance.x) < 12 && Mathf.Abs(playerDistance.y) < 3)
+            {
+                rb.velocity = new Vector2(speed * (playerDistance.x / Mathf.Abs(playerDistance.x)), rb.velocity.y);
+            }
+
+            anim.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
+
+            if (rb.velocity.x > 0 && !facingRight)
+            {
+                Flip();
+            }
+            else if (rb.velocity.x < 0 && facingRight)
+            {
+                Flip();
+            }
         }
-
-        anim.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
-
-        if (rb.velocity.x > 0 && !facingRight)
-        {
-            Flip();
-        }else if (rb.velocity.x < 0 && facingRight)
-        {
-            Flip();
-        }
-
     }
 
     private void Flip()
@@ -61,6 +82,73 @@ public class Enemy : MonoBehaviour
         scale.x *= -1;
         transform.localScale = scale; 
     }
+
+
+    // Método responsável pelo dano que o inimigo irá levar
+    public void TakeDamage(int damage)
+    {
+        health -= damage;
+        if (health <= 0)
+        {
+            isDead = true;
+            rb.velocity = Vector2.zero;
+            anim.SetTrigger("Dead");
+            FindObjectOfType<Player>().souls += souls;
+            FindObjectOfType<UIManager>().UpdateUI();            
+
+
+            if (item != null)
+            {
+                GameObject tempItem = Instantiate(itemDrop, transform.position, transform.rotation);
+                tempItem.GetComponent<ItemDrop>().item = item;
+            }
+
+        }
+        else
+        {
+
+            StartCoroutine(DamageCoroutine());
+        }
+    }
+
+
+    // Método que controla a parte estética do dano do inimigo
+    IEnumerator DamageCoroutine()
+    {
+        for (float i = 0; i < 0.2f; i += 0.2f)
+        {
+            spriteRend.color = Color.red;
+            yield return new WaitForSeconds(0.1f);
+            spriteRend.color = Color.white;
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+
+    // Método que destroy o inimigo 
+    public void DestroyEnemy()
+    {
+        Destroy(gameObject);
+    }
+
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        Player player = collision.gameObject.GetComponent<Player>();
+        if (player != null)
+        {
+            player.TakeDamage(damage);
+            player.GetComponent<Rigidbody2D>().AddForce(Vector2.right * 10 * (playerDistance.x / Mathf.Abs(playerDistance.x)), 
+                ForceMode2D.Impulse);
+        }
+
+    }
+
+
+
+
+
+
+
 }
 
 
