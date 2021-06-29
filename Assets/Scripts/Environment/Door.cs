@@ -31,6 +31,10 @@ public class Door : MonoBehaviour
                 spriteRend.sprite = doorOpen;
                 boxCol.enabled = false;
             }
+            else
+            {
+                FindObjectOfType<UIManager>().SetMessage("Precisa da " + key.keyName);
+            }
         }
     }
 

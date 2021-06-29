@@ -12,9 +12,12 @@ public class Inventory : MonoBehaviour
 
     public List<ConsumableItem> items;
 
-    public List<Armor> armor; 
+    public List<Armor> armors; 
 
     public static Inventory inventory;
+
+    public ItemDataBase itemDataBase;
+
 
     private void Awake()
     {
@@ -27,7 +30,45 @@ public class Inventory : MonoBehaviour
         }
 
         DontDestroyOnLoad(gameObject);
+        LoadInventory();
     }
+
+    private void Start()
+    {
+       
+        FindObjectOfType<UIManager>().UpdateUI();
+    }
+
+
+    // Método que carrega os itens que estiverem salvos no game manager
+    void LoadInventory()
+    {
+        for (int i = 0; i < GameManager.gameManager.weaponId.Length; i++)
+        {
+            AddWeapon(itemDataBase.GetWeapon(GameManager.gameManager.weaponId[i]));
+        }
+
+
+        for (int i = 0; i < GameManager.gameManager.itemId.Length; i++)
+        {
+            AddItem(itemDataBase.GetConsumableItem(GameManager.gameManager.itemId[i]));
+        }
+
+        for (int i = 0; i < GameManager.gameManager.armorId.Length; i++)
+        {
+            AddArmor(itemDataBase.GetArmor(GameManager.gameManager.armorId[i]));
+        }
+
+
+        for (int i = 0; i < GameManager.gameManager.keyId.Length; i++)
+        {
+            AddKey(itemDataBase.GetKey(GameManager.gameManager.keyId[i]));
+        }
+
+    }
+
+
+
 
     // Método que contabiliza a quantidade de itens que o jogador possui
     public int CountItems(ConsumableItem item)
@@ -43,6 +84,13 @@ public class Inventory : MonoBehaviour
         }
 
         return numberOfItems;
+    }
+
+
+    // Método que adiciona armaduras ao inventário
+    public void AddArmor(Armor armor)
+    {
+        this.armors.Add(armor);
     }
 
 

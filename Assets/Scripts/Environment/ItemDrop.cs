@@ -23,6 +23,7 @@ public class ItemDrop : MonoBehaviour
         {
             Inventory.inventory.AddItem(item);
             FindObjectOfType<UIManager>().UpdateUI();
+            FindObjectOfType<UIManager>().SetMessage(item.message);
             Destroy(gameObject);
         }
 

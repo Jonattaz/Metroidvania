@@ -20,6 +20,8 @@ public class Player : MonoBehaviour
     // Velocidade atual
     private float speed;
 
+    public int manaCost;
+
     private bool facingRight = true;
 
     private bool onGround;
@@ -34,6 +36,8 @@ public class Player : MonoBehaviour
 
     // Referência ao animator do jogador
     private Animator animPlayer;
+
+    public Rigidbody2D projectile;
 
     private Attack attack;
 
@@ -73,22 +77,27 @@ public class Player : MonoBehaviour
     // Váriavel que controla a força do dash
     public float dashForce;
 
+    // Variável que representa e da acesso ao GameManager
+    private GameManager gameManager;
+
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        speed = maxSpeed;
         animPlayer = GetComponent<Animator>();
         attack = GetComponentInChildren<Attack>();
-        mana = maxMana;
-        health = maxHealth;
         spriteRend = GetComponent<SpriteRenderer>();
-        FindObjectOfType<UIManager>().UpdateUI();
         inventory = Inventory.inventory;
+        gameManager = GameManager.gameManager;
+
+        SetPlayer(); // ERRO DE REFFERÊNCIA
+        
+
     }
 
-// Update is called once per frame
-void Update()
+    // Update is called once per frame
+    void Update()
     {
         if (!isDead)
         {
@@ -136,7 +145,26 @@ void Update()
             {
                 rb.velocity = Vector2.zero;
                 animPlayer.SetTrigger("Dash");
+            }else if (Input.GetKeyDown(KeyCode.Q) && mana >= manaCost)
+            {
+                Rigidbody2D tempProjectile = Instantiate(projectile, transform.position, transform.rotation);
+                tempProjectile.GetComponent<Attack>().SetWeapon(50);
+                if (facingRight)
+                {
+                    tempProjectile.AddForce(new Vector2(5,10), ForceMode2D.Impulse);
+
+                }
+                else
+                {
+                    tempProjectile.AddForce(new Vector2(-5, 10), ForceMode2D.Impulse);
+                }
+
+                mana -= manaCost;
+                FindObjectOfType<UIManager>().UpdateUI();
+
             }
+
+
 
         }
     }
@@ -223,7 +251,7 @@ void Update()
     public void AddArmor(Armor item)
     {
         armor = item;
-        defense = armor.defense;
+        defense = armor.defense; // ERRO DE REFERÊNCIA NO SAVE
     }
 
     // Método que retorna a vida do jogador
@@ -307,6 +335,51 @@ void Update()
         }else if ( skill == PlayerSkill.doubleJump)
         {
             doubleJumpSkill = true;
+        }
+    }
+
+
+    // Método que define alguns valores para o player, como vida, mana e etc
+    public void SetPlayer()
+    {
+        Vector3 playerPos = new Vector3(gameManager.playerPosX, gameManager.playerPosY, 0);
+
+        transform.position = playerPos;
+        maxHealth = gameManager.health;
+        maxMana = gameManager.mana;
+        speed = maxSpeed;
+        health = maxHealth;
+        mana = maxMana;
+        strength = gameManager.strength;
+        souls = gameManager.souls;
+        doubleJumpSkill = gameManager.canDoubleJump;
+        dashSkill = gameManager.canBackDash;
+        if (gameManager.currentArmorId > 0)
+        {
+            AddArmor(Inventory.inventory.itemDataBase.GetArmor(gameManager.currentArmorId)); // ERRO DE REFERÊCIA NO SAVE
+        }
+        if (gameManager.currentWeaponId > 0)
+        {
+            AddWeapon(Inventory.inventory.itemDataBase.GetWeapon(gameManager.currentWeaponId));
+        }
+
+
+
+    }
+
+
+    // Método que verifica se as habilidades estão repetidas
+    public bool GetSkill(PlayerSkill skill)
+    {
+        if (skill == PlayerSkill.dash)
+        {
+            return dashSkill;
+        }else if (skill == PlayerSkill.doubleJump)
+        {
+            return doubleJumpSkill;
+        }else
+        {
+            return false;
         }
     }
 

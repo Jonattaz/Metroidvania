@@ -28,6 +28,9 @@ public class Enemy : MonoBehaviour
     // Variável que representa a velocidade do inimigo
     public float speed;
 
+    public Vector2 damageForce;
+
+
     private bool facingRight = false;
 
     private bool isDead;
@@ -63,11 +66,11 @@ public class Enemy : MonoBehaviour
 
             anim.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
 
-            if (rb.velocity.x > 0 && !facingRight)
+            if (rb.velocity.x > 0.5f && !facingRight)
             {
                 Flip();
             }
-            else if (rb.velocity.x < 0 && facingRight)
+            else if (rb.velocity.x < 0.5f && facingRight)
             {
                 Flip();
             }
@@ -137,8 +140,10 @@ public class Enemy : MonoBehaviour
         if (player != null)
         {
             player.TakeDamage(damage);
-            player.GetComponent<Rigidbody2D>().AddForce(Vector2.right * 10 * (playerDistance.x / Mathf.Abs(playerDistance.x)), 
-                ForceMode2D.Impulse);
+            // DamageForce e newDamageforce possuem por objetivo impedir o jogador de ficar em cima dos inimigos,
+            // ação não desejada
+            Vector2 newDamageForce = new Vector2(damageForce.x * (playerDistance.x / Mathf.Abs(playerDistance.x)),damageForce.y);
+            player.GetComponent<Rigidbody2D>().AddForce(newDamageForce,ForceMode2D.Impulse);
         }
 
     }

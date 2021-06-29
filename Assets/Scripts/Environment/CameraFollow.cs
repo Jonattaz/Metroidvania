@@ -18,10 +18,10 @@ public class CameraFollow : MonoBehaviour
 	{
 		// Setting up the reference.
 		player = GameObject.FindGameObjectWithTag("Player").transform;
-		/*maxXAndY.x = GameManager.gameManager.maxCamX;
+		maxXAndY.x = GameManager.gameManager.maxCamX;
 		maxXAndY.y = GameManager.gameManager.maxCamY;
 		minXAndY.x = GameManager.gameManager.minCamX;
-		minXAndY.y = GameManager.gameManager.minCamY; */
+		minXAndY.y = GameManager.gameManager.minCamY; 
 	}
 
 

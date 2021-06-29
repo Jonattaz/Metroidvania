@@ -21,7 +21,7 @@ class PlayerData
     public int[] armorId;
     public int[] keyId;
     public int upgradeCost;
-    public int currentWaponId;
+    public int currentWeaponId;
     public int currentArmorId;
     public bool canDoubleJump;
     public bool canBackDash;
@@ -41,10 +41,10 @@ public class GameManager : MonoBehaviour
     public int[] armorId;
     public int[] keyId;
     public int upgradeCost;
-    public int currentWaponId;
+    public int currentWeaponId;
     public int currentArmorId;
     public bool canDoubleJump = false;
-    public bool canSpinDash = false;
+    public bool canBackDash = false;
 
 
     // Variável que armazena local em que irá ficar o save
@@ -70,6 +70,7 @@ public class GameManager : MonoBehaviour
 
         filePath = Application.persistentDataPath + "/playerInfo.dat";
 
+        Load();
     }
 
     // Método resposável pelo sistema de save do jogo
@@ -81,7 +82,7 @@ public class GameManager : MonoBehaviour
 
         itemId = new int[Inventory.inventory.items.Count];
         weaponId = new int[Inventory.inventory.items.Count];
-        armorId = new int[Inventory.inventory.armor.Count];
+        armorId = new int[Inventory.inventory.armors.Count];
         keyId = new int[Inventory.inventory.keys.Count];
 
         // Loop para os items
@@ -99,7 +100,7 @@ public class GameManager : MonoBehaviour
         // Loop para as armaduras
         for (int i = 0; i < armorId.Length; i++)
         {
-           armorId[i] = Inventory.inventory.armor[i].itemID;
+           armorId[i] = Inventory.inventory.armors[i].itemID;
         }
         
         
@@ -151,8 +152,54 @@ public class GameManager : MonoBehaviour
 
         Debug.Log("Salvou");
 
+        FindObjectOfType<UIManager>().SetMessage("Jogo salvo");
+
+
     }
+
+
+    // Método que carrega os dados do jogador
+    public void Load()
+    {
+        if (File.Exists(filePath))
+        {
+            BinaryFormatter binary = new BinaryFormatter();
+            FileStream file = File.Open(filePath, FileMode.Open);
+
+            PlayerData data = (PlayerData)binary.Deserialize(file);
+            file.Close();
+
+            health = data.health;
+            mana = data.mana;
+            strength = data.strength;
+            playerPosX = data.playerPosX;
+            playerPosY = data.playerPosY;
+            maxCamX = data.maxCamX;
+            maxCamY = data.maxCamY;
+            minCamX = data.minCamX;
+            minCamY = data.minCamY;
+            souls = data.souls;
+            upgradeCost = data.upgradeCost;
+            currentArmorId = data.currentArmorId;
+            currentWeaponId = data.currentWeaponId;
+            canDoubleJump = data.canDoubleJump;
+            canBackDash = data.canBackDash;
+            itemId = data.itemId;
+            weaponId = data.weaponId;
+            armorId = data.armorId;
+            keyId = data.keyId;
+
+        }
+    }
+
+
+
+
+
+
+
 }
+
 
 
 

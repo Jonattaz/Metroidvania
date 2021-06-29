@@ -21,6 +21,9 @@ public class UIManager : MonoBehaviour
     // Index do menuOptions
     private int cursorIndex = 0;
 
+    // Referência a mensagem que aparece na tela ao coletar algum item
+    public Text messageText;
+
     // Referência à lista de itens
     public GameObject scrollView;
 
@@ -30,6 +33,8 @@ public class UIManager : MonoBehaviour
     // Referência ao inventário
     private Inventory inventory;
 
+    // Variável que controla se existe alguma mensagem na tela
+    private bool isMessageAtive = false;
 
     // Referência o prefab do ItemList
     public GameObject itemListPrefab;
@@ -46,6 +51,9 @@ public class UIManager : MonoBehaviour
     public Text descriptionText;
 
     public Scrollbar scrollVertical;
+
+    // Variável que representa o tempo para o texto desaparecer da tela
+    private float textTimer;
 
     // Textos dos status do jogador
     public Text healthText, manaText, strengthText, attackText, defenseText;
@@ -65,6 +73,32 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (isMessageAtive)
+        {
+            Color color = messageText.color;
+            color.a += 2f * Time.deltaTime;
+            messageText.color = color;
+            if (color.a >= 1)
+            {
+                isMessageAtive = false;
+                textTimer = 0;
+            }
+        }else if (!isMessageAtive)
+        {
+            textTimer += Time.deltaTime;
+            if (textTimer >= 2f)
+            {
+                Color color = messageText.color;
+                color.a -= 2f * Time.deltaTime;
+                messageText.color = color;
+                if (color.a <= 0)
+                {
+                    messageText.text = "";
+                }
+            }
+        }
+
+
         if (Input.GetKeyDown(KeyCode.P))
         {
             pauseMenu = !pauseMenu;
@@ -217,10 +251,10 @@ public class UIManager : MonoBehaviour
 
         }else if (option == 1)
         {
-            for (int i = 0; i < inventory.armor.Count; i++)
+            for (int i = 0; i < inventory.armors.Count; i++)
             {
                 GameObject tempItem = Instantiate(itemListPrefab, content.transform);
-                tempItem.GetComponent<ItemList>().SetUpArmor(inventory.armor[i]);
+                tempItem.GetComponent<ItemList>().SetUpArmor(inventory.armors[i]);
                 items.Add(tempItem.GetComponent<ItemList>());
             }
         }
@@ -285,6 +319,16 @@ public class UIManager : MonoBehaviour
         soulsUI.text = "Souls: " + player.souls;
         potionUI.text = "X" + inventory.CountItems(player.item);
     }
+
+    public void SetMessage(string message)
+    {
+ 
+        Color color = messageText.color;
+        color.a = 0;
+        messageText.color = color;
+        isMessageAtive = true;
+    }
+
 
 
 }

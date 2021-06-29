@@ -12,8 +12,15 @@ public class KeyDrop : MonoBehaviour
     void Start()
     {
         spriteRend = GetComponent<SpriteRenderer>();
-
         spriteRend.sprite = key.image;
+
+        for (int i = 0; i < Inventory.inventory.keys.Count; i++)
+        {
+            if (Inventory.inventory.keys[i] == key)
+            {
+                Destroy(gameObject);
+            }
+        }
 
     }
 
@@ -24,6 +31,7 @@ public class KeyDrop : MonoBehaviour
         if (player != null)
         {
             Inventory.inventory.AddKey(key);
+            FindObjectOfType<UIManager>().SetMessage(key.message);
             Destroy(gameObject);
         }
     }

@@ -2,24 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponDrop : MonoBehaviour
+public class ArmorDrop : MonoBehaviour
 {
+    public Armor armor;
 
-    // Referência ao Scriptable Object Weapon
-    public Weapon weapon;
-
-    // Sprite Renderer da arma
     private SpriteRenderer spriteRend;
+
 
     // Start is called before the first frame update
     void Start()
     {
         spriteRend = GetComponent<SpriteRenderer>();
-        spriteRend.sprite = weapon.image;
+        spriteRend.sprite = armor.image;
 
-        for (int i = 0; i < Inventory.inventory.weapons.Count; i++)
+        for (int i = 0; i < Inventory.inventory.armors.Count; i++)
         {
-            if (Inventory.inventory.weapons[i]  == weapon)
+            if (Inventory.inventory.armors[i] == armor)
             {
                 Destroy(gameObject);
             }
@@ -27,19 +25,29 @@ public class WeaponDrop : MonoBehaviour
 
     }
 
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Player player = collision.GetComponent<Player>();
         if (player != null)
         {
-            player.AddWeapon(weapon);
-            Inventory.inventory.AddWeapon(weapon);
-            FindObjectOfType<UIManager>().SetMessage(weapon.message);
+            player.AddArmor(armor);
+            Inventory.inventory.AddArmor(armor);
+            FindObjectOfType<UIManager>().SetMessage(armor.message);
             Destroy(gameObject);
         }
+                                                
     }
 
 
-     
+
+
+
 
 }
